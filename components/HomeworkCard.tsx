@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 
+// @ts-ignore
 export function HomeworkCard({ homework, onUnsubscribe }) {
     return (
         <Card className="p-6 h-full flex flex-col">

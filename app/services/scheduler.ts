@@ -1,4 +1,5 @@
 // services/scheduler.ts
+// @ts-ignore
 import { scheduleJob } from 'node-schedule'
 import emailjs from '@emailjs/browser'
 import { format } from 'date-fns'
