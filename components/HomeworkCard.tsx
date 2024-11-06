@@ -24,14 +24,6 @@ export function HomeworkCard({ homework, onUnsubscribe }) {
             <p className="text-sm text-gray-500 mb-2">{homework.subject}</p>
             <p className="text-gray-600 flex-grow">{homework.description}</p>
 
-            <Button
-                variant="outline"
-                size="sm"
-                className="mt-4"
-                onClick={() => onUnsubscribe(homework._id)}
-            >
-                Se désabonner de ce devoir
-            </Button>
         </Card>
     )
 }
