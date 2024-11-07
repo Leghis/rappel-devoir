@@ -1,10 +1,11 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
 import clientPromise from "@/app/utils/mongodb";
 import nodemailer from 'nodemailer';
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { marked } from "marked";  // Importer la bibliothèque pour le Markdown
+import { marked } from "marked";  // Importer marked pour le rendu Markdown
 
+// Configuration du transporteur d'email
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -13,11 +14,9 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-
+// Fonction pour créer le template d'email avec le Markdown converti
 const createEmailTemplate = (homeworkData: any) => {
     const dueDate = format(new Date(homeworkData.dueDate), 'dd MMMM yyyy', { locale: fr });
-
-    // Convertir la description en HTML en utilisant le rendu Markdown
     const descriptionHtml = marked(homeworkData.description || "");
 
     return `
@@ -29,55 +28,47 @@ const createEmailTemplate = (homeworkData: any) => {
             <title>Nouveau Devoir</title>
         </head>
         <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+            <!-- Table principale -->
             <table role="presentation" style="width: 100%; border-collapse: collapse;">
                 <tr>
                     <td align="center" style="padding: 40px 0;">
-                        <table role="presentation" style="max-width: 600px; border-collapse: collapse; background-color: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <table role="presentation" style="max-width: 600px; background-color: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <!-- En-tête -->
                             <tr>
                                 <td style="padding: 30px; background-color: #6366f1; border-radius: 8px 8px 0 0;">
-                                    <h1 style="margin: 0; color: white; font-size: 24px; text-align: center;">
+                                    <h1 style="color: white; font-size: 24px; text-align: center;">
                                         Nouveau Devoir Ajouté
                                     </h1>
                                 </td>
                             </tr>
-
                             <!-- Contenu principal -->
                             <tr>
                                 <td style="padding: 30px;">
-                                    <h2 style="color: #4f46e5; margin-top: 0; margin-bottom: 20px; font-size: 20px;">
+                                    <h2 style="color: #4f46e5; font-size: 20px;">
                                         ${homeworkData.title}
                                     </h2>
-                                    
                                     <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                                        <h3 style="color: #374151; margin-top: 0; margin-bottom: 10px; font-size: 16px;">
-                                            Description du devoir :
-                                        </h3>
-                                        <div style="color: #4b5563; margin: 0; line-height: 1.6;">
-                                            ${descriptionHtml}
-                                        </div>
+                                        <h3 style="color: #374151; font-size: 16px;">Description du devoir :</h3>
+                                        <div style="color: #4b5563;">${descriptionHtml}</div>
                                     </div>
-
-                                    <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                                    <table role="presentation" style="width: 100%; margin-bottom: 20px;">
                                         <tr>
                                             <td style="padding: 15px; background-color: #fef3c7; border-radius: 8px;">
-                                                <p style="margin: 0; color: #92400e; font-weight: bold;">
+                                                <p style="color: #92400e; font-weight: bold;">
                                                     📅 Date limite : ${dueDate}
                                                 </p>
                                                 ${homeworkData.timeRemaining ? `
-                                                <p style="margin: 5px 0 0 0; color: #92400e;">
+                                                <p style="color: #92400e;">
                                                     ⏰ Temps restant : ${homeworkData.timeRemaining}
-                                                </p>
-                                                ` : ''}
+                                                </p>` : ''}
                                             </td>
                                         </tr>
                                     </table>
-
                                     <!-- Conseils ou remarques -->
                                     <div style="background-color: #e0e7ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                                        <p style="margin: 0; color: #3730a3; font-size: 14px;">
+                                        <p style="color: #3730a3;">
                                             💡 Rappel : N'oubliez pas de :
-                                            <ul style="margin: 10px 0 0 0; padding-left: 20px;">
+                                            <ul>
                                                 <li>Commencer tôt pour éviter le stress de dernière minute</li>
                                                 <li>Vérifier les critères d'évaluation</li>
                                                 <li>Poser des questions si nécessaire</li>
@@ -86,14 +77,11 @@ const createEmailTemplate = (homeworkData: any) => {
                                     </div>
                                 </td>
                             </tr>
-
                             <!-- Pied de page -->
                             <tr>
                                 <td style="padding: 30px; background-color: #f3f4f6; border-radius: 0 0 8px 8px;">
-                                    <p style="margin: 0; color: #6b7280; font-size: 14px; text-align: center;">
+                                    <p style="color: #6b7280; text-align: center;">
                                         Cet email a été envoyé automatiquement par le système de suivi des devoirs.
-                                        <br>
-                                        Pour plus d'informations, consultez votre espace de travail.
                                     </p>
                                 </td>
                             </tr>
@@ -106,73 +94,45 @@ const createEmailTemplate = (homeworkData: any) => {
     `;
 };
 
-
+// Fonction pour envoyer les emails
 const sendEmails = async (subscribers: any[], homeworkData: any) => {
     const emailPromises = subscribers.map(subscriber => {
         const mailOptions = {
             from: {
                 name: "Suivi des Devoirs",
-                address: process.env.EMAIL_USER!
+                address: process.env.EMAIL_USER
             },
             to: subscriber.email,
-            subject: `📚 Nouveau devoir : ${homeworkData.title}`,
+            subject: `📚 Rappel de devoir : ${homeworkData.title}`,
             html: createEmailTemplate(homeworkData)
         };
-
         return transporter.sendMail(mailOptions);
     });
-
     return Promise.all(emailPromises);
 };
 
-export async function GET() {
-    try {
-        const client = await clientPromise;
-        const db = client.db("homework-tracker");
-        const homeworks = await db.collection("homeworks").find({}).toArray();
-        return NextResponse.json(homeworks);
-    } catch (error) {
-        console.error("Database error:", error);
-        return NextResponse.json({ error: "Failed to fetch homeworks" }, { status: 500 });
-    }
-}
-
+// Endpoint pour envoyer les rappels
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
+        const { homework } = await request.json();
         const client = await clientPromise;
         const db = client.db("homework-tracker");
 
-        const result = await db.collection("homeworks").insertOne({
-            ...body,
-            createdAt: new Date(),
-            details: [],
-        });
-
+        // Récupération des abonnés pour envoyer le rappel
         const subscribers = await db.collection("subscribers").find({}).toArray();
 
-        try {
-            await sendEmails(subscribers, body);
+        // Envoi des emails
+        await sendEmails(subscribers, homework);
 
-            return NextResponse.json({
-                success: true,
-                homework: result,
-                notificationsSent: subscribers.length
-            });
-        } catch (emailError) {
-            console.error("Erreur d'envoi des emails:", emailError);
-
-            return NextResponse.json({
-                success: true,
-                homework: result,
-                notificationsSent: 0,
-                emailError: "Failed to send notifications"
-            });
-        }
-    } catch (error) {
-        console.error("Database error:", error);
         return NextResponse.json({
-            error: "Failed to create homework"
+            success: true,
+            notificationsSent: subscribers.length
+        });
+    } catch (error) {
+        console.error("Erreur lors de l'envoi des rappels:", error);
+        return NextResponse.json({
+            success: false,
+            error: "Échec de l'envoi des rappels"
         }, { status: 500 });
     }
 }

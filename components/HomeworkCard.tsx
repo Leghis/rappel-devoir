@@ -1,11 +1,40 @@
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { format } from "date-fns"
-import { fr } from "date-fns/locale"
-import ReactMarkdown from "react-markdown"  // Assurez-vous d'avoir installé cette bibliothèque
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import ReactMarkdown from "react-markdown";
+import { useState } from "react";
 
-//@ts-ignore
+// @ts-ignore
 export function HomeworkCard({ homework, onUnsubscribe }) {
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState("");
+
+    const handleSendReminder = async () => {
+        setLoading(true);
+        setMessage("");  // Réinitialiser le message
+
+        try {
+            const response = await fetch('/api/homeworks/remind', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ homework })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                setMessage(`Rappel envoyé à ${result.notificationsSent} abonnés.`);
+            } else {
+                setMessage("Erreur lors de l'envoi du rappel.");
+            }
+        } catch (error) {
+            console.error("Erreur d'envoi:", error);
+            setMessage("Erreur lors de l'envoi du rappel.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <Card className="p-6 h-full flex flex-col">
             <div className="flex justify-between items-start mb-4">
@@ -24,10 +53,17 @@ export function HomeworkCard({ homework, onUnsubscribe }) {
             <h3 className="text-xl font-semibold">{homework.title}</h3>
             <p className="text-sm text-gray-500 mb-2">{homework.subject}</p>
 
-            {/* Utilisation de ReactMarkdown et de la classe prose pour le texte riche */}
             <div className="text-gray-600 flex-grow prose prose-sm prose-blue">
                 <ReactMarkdown>{homework.description}</ReactMarkdown>
             </div>
+
+            {/* Bouton pour envoyer un rappel */}
+            <div className="mt-4">
+                <Button onClick={handleSendReminder} disabled={loading} className="w-full">
+                    {loading ? "Envoi en cours..." : "Envoyer un rappel"}
+                </Button>
+                {message && <p className="text-sm text-gray-600 mt-2">{message}</p>}
+            </div>
         </Card>
-    )
+    );
 }
