@@ -96,20 +96,24 @@ const createEmailTemplate = (homeworkData: any) => {
 
 // Fonction pour envoyer les emails
 const sendEmails = async (subscribers: any[], homeworkData: any) => {
+    const emailUser = process.env.EMAIL_USER;
+    if (!emailUser) {
+        throw new Error("L'email de l'expéditeur (EMAIL_USER) n'est pas défini dans les variables d'environnement.");
+    }
+
     const emailPromises = subscribers.map(subscriber => {
         const mailOptions = {
-            from: {
-                name: "Suivi des Devoirs",
-                address: process.env.EMAIL_USER
-            },
+            from: `Suivi des Devoirs <${emailUser}>`, // Format compatible pour nodemailer
             to: subscriber.email,
             subject: `📚 Rappel de devoir : ${homeworkData.title}`,
             html: createEmailTemplate(homeworkData)
         };
         return transporter.sendMail(mailOptions);
     });
+
     return Promise.all(emailPromises);
 };
+
 
 // Endpoint pour envoyer les rappels
 export async function POST(request: Request) {
