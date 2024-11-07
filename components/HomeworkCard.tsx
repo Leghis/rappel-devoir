@@ -2,28 +2,32 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
+import ReactMarkdown from "react-markdown"  // Assurez-vous d'avoir installé cette bibliothèque
 
-// @ts-ignore
+//@ts-ignore
 export function HomeworkCard({ homework, onUnsubscribe }) {
     return (
         <Card className="p-6 h-full flex flex-col">
             <div className="flex justify-between items-start mb-4">
-        <span className={`text-sm px-2 py-1 rounded ${
-            homework.priority === 'high' ? 'bg-red-100 text-red-800' :
-                homework.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-green-100 text-green-800'
-        }`}>
-          {homework.priority}
-        </span>
+                <span className={`text-sm px-2 py-1 rounded ${
+                    homework.priority === 'high' ? 'bg-red-100 text-red-800' :
+                        homework.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-green-100 text-green-800'
+                }`}>
+                    {homework.priority}
+                </span>
                 <span className="text-sm text-gray-500">
-          {format(new Date(homework.dueDate), 'dd MMMM yyyy', { locale: fr })}
-        </span>
+                    {format(new Date(homework.dueDate), 'dd MMMM yyyy', { locale: fr })}
+                </span>
             </div>
 
             <h3 className="text-xl font-semibold">{homework.title}</h3>
             <p className="text-sm text-gray-500 mb-2">{homework.subject}</p>
-            <p className="text-gray-600 flex-grow">{homework.description}</p>
 
+            {/* Utilisation de ReactMarkdown et de la classe prose pour le texte riche */}
+            <div className="text-gray-600 flex-grow prose prose-sm prose-blue">
+                <ReactMarkdown>{homework.description}</ReactMarkdown>
+            </div>
         </Card>
     )
 }
