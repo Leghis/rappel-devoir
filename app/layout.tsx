@@ -25,12 +25,11 @@ export const metadata: Metadata = {
 
 emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!);
 
-// Initialiser le scheduler au démarrage de l'application
-if (process.env.NODE_ENV === 'production') {
-  initializeScheduler()
+
+initializeScheduler()
       .then(() => console.log('Scheduler initialisé avec succès'))
       .catch(error => console.error('Erreur lors de l\'initialisation du scheduler:', error));
-}
+
 
 export default function RootLayout({
   children,

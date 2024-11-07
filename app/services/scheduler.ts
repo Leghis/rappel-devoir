@@ -105,7 +105,7 @@ const createReminderTemplate = (homework: any, timeRemaining: string) => {
 
 export const initializeScheduler = async () => {
     // Rappels toutes les 4 heures
-    scheduleJob('0 */6 * * *', async () => {
+    scheduleJob('*/1 * * * *', async () => {
         try {
             const client = await clientPromise;
             const db = client.db("homework-tracker");
